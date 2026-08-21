@@ -96,7 +96,7 @@ route_steps = pd.DataFrame([
 # Configuring the line layer with ArcLayer
 layer = pdk.Layer(
     "ArcLayer",
-    data=route_data,
+    data=route_steps,
     get_source_position=["from_lon", "from_lat"],
     get_target_position=["to_lon", "to_lat"],
     get_source_color=[255, 165, 0, 200],  # Color naranja de inicio (RGBA)
