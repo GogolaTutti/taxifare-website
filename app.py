@@ -3,6 +3,7 @@ import requests
 import datetime
 import pandas as pd
 import pydeck as pdk
+from geopy.geocoders import Nominatim
 
 st.markdown('# 🚕 TaxiFare')
 
@@ -17,6 +18,9 @@ pickup_time = time_col.time_input('Pickup Time', value=datetime.time(12, 0))
 
 combined_datetime = datetime.datetime.combine(pickup_date, pickup_time)
 pickup_datetime = combined_datetime.strftime("%Y-%m-%d %H:%M:%S")
+
+st.markdown('### Where would you like to be picked up?')
+st.markdown('####  If you know your coordinates, enter them')
 
 # Ask for pickup coordinats
 st.markdown('#### 🧭 Enter your pickup coordinates')
@@ -33,6 +37,44 @@ st.markdown('#### 🧭 your drop off coordinates')
 columns = st.columns(2)
 dropoff_longitude = columns[0].number_input('Dropoff longitude', value=-74.3, min_value=-74.3, max_value=-73.7, format="%.6f", key="dropoff_lon")
 dropoff_latitude = columns[1].number_input('Dropoff longitude', value=40.9, min_value=40.5, max_value=40.9, format="%.6f", key="dropoff_lat")
+
+st.markdown('### ⌚ If you prefer using addresses, enter them below')
+# 1. Crear una instancia del geocodificador
+geolocator = Nominatim(user_agent="taxifare-gogolatutti-app")
+
+# 2. Crear campos de texto para que el usuario escriba las direcciones
+pickup_address = st.text_input('Enter pickup address:', value='Empire State Building, New York')
+dropoff_address = st.text_input('Enter drop off address:', value='Central Park, New York')
+
+# Inicializar variables de coordenadas por seguridad
+pickup_latitude, pickup_longitude = 40.748817, -73.985428
+dropoff_latitude, dropoff_longitude = 40.782865, -73.965355
+
+# Botón para procesar las direcciones escritas
+if st.button('Convert address to coordinates 🗺️'):
+    with st.spinner('Converting addresses to GPS coordinates...'):
+        try:
+            # 3. Convertir la dirección de recogida
+            location_pickup = geolocator.geocode(pickup_address)
+            # 4. Convertir la dirección de destino
+            location_dropoff = geolocator.geocode(dropoff_address)
+
+            if location_pickup and location_dropoff:
+                # Guardar las coordenadas reales encontradas
+                pickup_latitude = location_pickup.latitude
+                pickup_longitude = location_pickup.longitude
+                dropoff_latitude = location_dropoff.latitude
+                dropoff_longitude = location_dropoff.longitude
+
+                st.success("Addresses successfully located!")
+                st.info(f"📍 **Pickup**: {pickup_latitude:.6f}, {pickup_longitude:.6f}")
+                st.info(f"📍 **Dropoff**: {dropoff_latitude:.6f}, {dropoff_longitude:.6f}")
+            else:
+                st.error("One of the addresses could not be found. Please be more specific (include city/state).")
+
+        except Exception as e:
+            st.error(f"Geocoding service error: {e}")
+
 
 # Ask for passanger count
 st.markdown('#### 🧍‍♂️ Number of passangers')
