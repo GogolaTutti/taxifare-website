@@ -43,8 +43,8 @@ st.markdown('### ⌚ If you prefer using addresses, enter them below')
 geolocator = Nominatim(user_agent="taxifare-gogolatutti-app")
 
 # 2. Crear campos de texto para que el usuario escriba las direcciones
-pickup_address = st.text_input('Enter pickup address:', value='Empire State Building, New York')
-dropoff_address = st.text_input('Enter drop off address:', value='Central Park, New York')
+pickup_address = st.text_input('Enter pickup address:')
+dropoff_address = st.text_input('Enter drop off address:')
 
 # Inicializar variables de coordenadas por seguridad
 pickup_latitude, pickup_longitude = 40.748817, -73.985428
