@@ -52,13 +52,46 @@ st.markdown('### 🗺️ Trip Route Map')
 
 # Creating a database with the structure that pydeck needs to draw the route lines
 # Uniting pickup to dropoff
-route_data = pd.DataFrame([{
-    "from_lat": pickup_latitude,
-    "from_lon": pickup_longitude,
-    "to_lat": dropoff_latitude,
-    "to_lon": dropoff_longitude,
-    "tooltip": "Your Taxi Route"
-}])
+#route_data = pd.DataFrame([{
+ #   "from_lat": pickup_latitude,
+  #  "from_lon": pickup_longitude,
+   # "to_lat": dropoff_latitude,
+ #   "to_lon": dropoff_longitude,
+  #  "tooltip": "Your Taxi Route"
+#}])
+
+# Calculating the manhattan distance
+def calculate_manhattan_distance(lat1, lon1, lat2, lon2):
+    # Approximate distance per coordinate degree in NY
+    lat_dist_km = 111.0
+    lon_dist_km = 85.0
+
+    # Manhattan distance = |x1 - x2| + |y1 - y2|
+    delta_lat = abs(lat1 - lat2) * lat_dist_km
+    delta_lon = abs(lon1 - lon2) * lon_dist_km
+    return delta_lat + delta_lon
+
+# Calculating the distance
+manhattan_km = calculate_manhattan_distance(pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude)
+
+# Showing the calculated distance
+st.markdown(f"### 🚖 Manhattan Distance: `{manhattan_km:.2f} km` ({manhattan_km * 0.621371:.2f} miles)")
+
+# Creating the lines of the route (L Route)
+# Tramo 1: Desde el inicio hasta la esquina (misma latitud de inicio, pero longitud de destino)
+# Tramo 2: Desde la esquina hasta el destino final
+route_steps = pd.DataFrame([
+    {
+        "from_lat": pickup_latitude, "from_lon": pickup_longitude,
+        "to_lat": pickup_latitude, "to_lon": dropoff_longitude,
+        "name": "Step 1: Horizontal Street"
+    },
+    {
+        "from_lat": pickup_latitude, "from_lon": dropoff_longitude,
+        "to_lat": dropoff_latitude, "to_lon": dropoff_longitude,
+        "name": "Step 2: Vertical Avenue"
+    }
+])
 
 # Configuring the line layer with ArcLayer
 layer = pdk.Layer(
