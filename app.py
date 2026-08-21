@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import datetime
 import pandas as pd
+import pydeck as pdk
 
 st.markdown('# 🚕 TaxiFare')
 
@@ -40,12 +41,51 @@ passenger_count = st.number_input('Passenger number please', min_value=1, max_va
 # Creating a map showing where passangers are to be picked up and dropped off
 st.markdown('#### Route Map')
 ## Let's create a dataframe with the coordinates
-map_df = pd.DataFrame([
-    {"lat": pickup_latitude, "lon": pickup_longitude},  # Punto de recogida
-    {"lat": dropoff_latitude, "lon": dropoff_longitude}   # Punto de destino
-])
+#map_df = pd.DataFrame([
+ #   {"lat": pickup_latitude, "lon": pickup_longitude},  # Punto de recogida
+  #  {"lat": dropoff_latitude, "lon": dropoff_longitude}   # Punto de destino
+#])
 ## Showing the coordinates in the map
-st.map(map_df)
+#st.map(map_df)
+
+st.markdown('### 🗺️ Trip Route Map')
+
+# Creating a database with the structure that pydeck needs to draw the route lines
+# Uniting pickup to dropoff
+route_data = pd.DataFrame([{
+    "from_lat": pickup_latitude,
+    "from_lon": pickup_longitude,
+    "to_lat": dropoff_latitude,
+    "to_lon": dropoff_longitude,
+    "tooltip": "Your Taxi Route"
+}])
+
+# Configuring the line layer with ArcLayer
+layer = pdk.Layer(
+    "ArcLayer",
+    data=route_data,
+    get_source_position=["from_lon", "from_lat"],
+    get_target_position=["to_lon", "to_lat"],
+    get_source_color=[255, 165, 0, 200],  # Color naranja de inicio (RGBA)
+    get_target_color=[255, 0, 0, 200],    # Color rojo de llegada (RGBA)
+    stroke_width=5,                       # Grosor de la línea
+)
+
+# Centering the view with respect to the coordinates of the user
+view_state = pdk.ViewState(
+    latitude=(pickup_latitude + dropoff_latitude) / 2,
+    longitude=(pickup_longitude + dropoff_longitude) / 2,
+    zoom=11,
+    pitch=45,  # Ángulo de inclinación 3D para apreciar el arco
+)
+
+# Showing the interactive map in the screen
+st.pydeck_chart(pdk.Deck(
+    layers=[layer],
+    initial_view_state=view_state,
+    tooltip={"text": "{tooltip}"}
+))
+
 
 
 ############################# Calling the API
